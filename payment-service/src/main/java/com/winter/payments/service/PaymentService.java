@@ -8,9 +8,9 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.winter.payments.domain.Payment;
-import com.winter.payments.domain.PaymentStatus;
-import com.winter.payments.dto.PaymentRequest;
-import com.winter.payments.dto.PaymentResponse;
+import com.winter.contracts.PaymentRequest;
+import com.winter.contracts.PaymentResponse;
+import com.winter.contracts.PaymentStatus;
 import com.winter.payments.exception.PaymentException;
 import com.winter.payments.repository.PaymentRepository;
 
@@ -52,16 +52,16 @@ public class PaymentService {
 
         try {
             if (request.amount().compareTo(BigDecimal.valueOf(100)) > 0) {
-                status = PaymentStatus.DECLINED;
+                status = PaymentStatus.PAYMENT_FAILED;
             } else if (Math.random() < 0.3) {
                 throw new PaymentException("Random payment failure");
             } else {
-                status = PaymentStatus.APPROVED;
+                status = PaymentStatus.SUCCESS;
             }
 
         } catch (PaymentException ex) {
             log.warn("payment_failed orderId={} reason={}", request.orderId(), ex.getMessage());
-            status = PaymentStatus.DECLINED;
+            status = PaymentStatus.PAYMENT_FAILED;
         }
 
         Payment payment = new Payment();

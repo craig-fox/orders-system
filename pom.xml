@@ -19,6 +19,7 @@
     </properties>
 
     <modules>
+        <module>api-contracts</module>
         <module>order-service</module>
         <module>payment-service</module>
         <module>inventory-service</module>

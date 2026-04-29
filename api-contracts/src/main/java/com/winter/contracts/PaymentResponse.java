@@ -1,4 +1,4 @@
-package com.winter.payments.dto;
+package com.winter.contracts;
 
 public record PaymentResponse(String paymentId, String status) {
     

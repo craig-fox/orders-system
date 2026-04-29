@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.winter.payments.dto.PaymentRequest;
-import com.winter.payments.dto.PaymentResponse;
+import com.winter.contracts.PaymentRequest;
+import com.winter.contracts.PaymentResponse;
+import com.winter.contracts.PaymentStatus;
 import com.winter.payments.service.PaymentService;
 
 import jakarta.validation.Valid;

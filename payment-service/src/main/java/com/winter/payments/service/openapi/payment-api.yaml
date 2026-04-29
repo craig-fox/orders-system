@@ -1,0 +1,114 @@
+openapi: 3.0.3
+info:
+  title: Payment Service API
+  version: 1.0.0
+  description: API for processing payments for orders
+
+servers:
+  - url: http://localhost:8082
+    description: Local development server
+
+paths:
+  /api/v1/payments:
+    post:
+      summary: Process a payment for an order
+      description: Creates a payment record and attempts to process payment for a given order.
+      operationId: processPayment
+      tags:
+        - Payments
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+
+      responses:
+        '200':
+          description: Payment processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+        '400':
+          description: Invalid payment request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '500':
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+
+  schemas:
+
+    PaymentRequest:
+      type: object
+      required:
+        - orderId
+        - amount
+      properties:
+        orderId:
+          type: string
+          format: uuid
+          description: Unique identifier of the order being paid
+          example: "2f1c9a2e-6c2d-4d3f-a2d1-7c3b9c8a1234"
+
+        amount:
+          type: number
+          format: double
+          description: Payment amount. Must be greater than 0
+          example: 99.99
+          minimum: 0.01
+
+        currency:
+          type: string
+          description: ISO-4217 currency code
+          example: "NZD"
+          default: "NZD"
+
+    PaymentResponse:
+      type: object
+      required:
+        - paymentId
+        - status
+      properties:
+        paymentId:
+          type: string
+          description: Unique identifier for the payment transaction
+          example: "pay_123456789"
+
+        status:
+          type: string
+          description: Current payment status
+          example: "SUCCESS"
+          enum:
+            - SUCCESS
+            - FAILED
+            - PENDING
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: "Invalid request payload"
+
+        errorCode:
+          type: string
+          example: "PAYMENT_VALIDATION_ERROR"
+
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-04-29T12:00:00Z"

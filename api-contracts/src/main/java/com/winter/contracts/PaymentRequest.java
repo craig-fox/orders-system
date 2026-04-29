@@ -1,4 +1,4 @@
-package com.winter.payments.dto;
+package com.winter.contracts;
 
 import java.math.BigDecimal;
 import java.util.UUID;
