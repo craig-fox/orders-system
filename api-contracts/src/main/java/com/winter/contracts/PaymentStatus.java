@@ -2,6 +2,7 @@ package com.winter.contracts;
 
 public enum PaymentStatus {
     SUCCESS,
-    PAYMENT_FAILED,
-    PROCESSING_ERROR
+    FAILED_INSUFFICIENT_FUNDS,
+    FAILED_VALIDATION,
+    FAILED_INTERNAL_ERROR
 }

@@ -2,7 +2,6 @@ package com.winter.payments.service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -12,12 +11,13 @@ import com.winter.contracts.PaymentRequest;
 import com.winter.contracts.PaymentResponse;
 import com.winter.contracts.PaymentStatus;
 import com.winter.payments.exception.PaymentException;
+import com.winter.payments.exception.PaymentSystemException;
 import com.winter.payments.repository.PaymentRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
+@Slf4j
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
@@ -25,57 +25,56 @@ public class PaymentService {
     public PaymentService(PaymentRepository paymentRepository) {
         this.paymentRepository = paymentRepository;
     }
-    
+
     public PaymentResponse processPayment(PaymentRequest request) {
 
         log.info("payment_requested orderId={} amount={}",
                 request.orderId(), request.amount());
 
-        // 🔑 1. Check for existing payment FIRST
-        Optional<Payment> existing = paymentRepository.findByOrderId(request.orderId());
+        validateRequest(request);
 
-        if (existing.isPresent()) {
-            Payment payment = existing.get();
+        return paymentRepository.findByOrderId(request.orderId())
+                .map(this::mapToResponse)
+                .orElseGet(() -> createAndSavePayment(request));
+    }
 
-            log.info("payment_already_exists orderId={} paymentId={} status={}",
-                    payment.getOrderId(), payment.getId(), payment.getStatus());
-
-            return new PaymentResponse(
-                    payment.getId().toString(),
-                    payment.getStatus().name()
-            );
-        }
-
-        // 2. Create new payment
-        UUID paymentId = UUID.randomUUID();
-        PaymentStatus status;
-
-        try {
-            if (request.amount().compareTo(BigDecimal.valueOf(100)) > 0) {
-                status = PaymentStatus.PAYMENT_FAILED;
-            } else if (Math.random() < 0.3) {
-                throw new PaymentException("Random payment failure");
-            } else {
-                status = PaymentStatus.SUCCESS;
-            }
-
-        } catch (PaymentException ex) {
-            log.warn("payment_failed orderId={} reason={}", request.orderId(), ex.getMessage());
-            status = PaymentStatus.PAYMENT_FAILED;
-        }
+    private PaymentResponse createAndSavePayment(PaymentRequest request) {
+        simulateInfrastructureFailure();
 
         Payment payment = new Payment();
-        payment.setId(paymentId);
+        payment.setId(UUID.randomUUID());
         payment.setOrderId(request.orderId());
         payment.setAmount(request.amount());
-        payment.setStatus(status);
         payment.setCreatedAt(Instant.now());
+
+        payment.setStatus(
+                request.amount().compareTo(BigDecimal.valueOf(100)) > 0
+                        ? PaymentStatus.FAILED_INSUFFICIENT_FUNDS
+                        : PaymentStatus.SUCCESS
+        );
 
         paymentRepository.save(payment);
 
-        log.info("payment_result orderId={} paymentId={} status={}",
-                request.orderId(), paymentId, status);
+        return mapToResponse(payment);
+    }
 
-        return new PaymentResponse(paymentId.toString(), status.name());
-    }   
+    private void validateRequest(PaymentRequest request) {
+        if (request.amount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new PaymentException("Amount must be greater than zero");
+        }
+    }
+
+
+    private void simulateInfrastructureFailure() {
+        if (Math.random() < 0.05) {
+            throw new PaymentSystemException("Payment processor unavailable");
+        }
+    }
+
+    private PaymentResponse mapToResponse(Payment payment) {
+        return new PaymentResponse(
+                payment.getId().toString(),
+                payment.getStatus().name()
+        );
+    }
 }

@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.winter.contracts.PaymentRequest;
 import com.winter.contracts.PaymentResponse;
-import com.winter.contracts.PaymentStatus;
 import com.winter.payments.service.PaymentService;
 
 import jakarta.validation.Valid;
@@ -15,16 +14,17 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
- private final PaymentService paymentService;
+
+    private final PaymentService paymentService;
 
     public PaymentController(PaymentService paymentService) {
         this.paymentService = paymentService;
     }
 
     @PostMapping
-    public ResponseEntity<PaymentResponse> processPayment(@Valid @RequestBody PaymentRequest request) {
-        PaymentResponse response = paymentService.processPayment(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<PaymentResponse> processPayment(
+            @Valid @RequestBody PaymentRequest request) {
 
+        return ResponseEntity.ok(paymentService.processPayment(request));
     }
 }
