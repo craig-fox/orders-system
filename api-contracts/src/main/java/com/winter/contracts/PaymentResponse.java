@@ -1,5 +1,5 @@
 package com.winter.contracts;
 
-public record PaymentResponse(String paymentId, String status) {
+public record PaymentResponse(String paymentId, PaymentStatus status) {
     
 }

@@ -74,7 +74,7 @@ public class PaymentService {
     private PaymentResponse mapToResponse(Payment payment) {
         return new PaymentResponse(
                 payment.getId().toString(),
-                payment.getStatus().name()
+                payment.getStatus()
         );
     }
 }

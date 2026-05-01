@@ -1,3 +1,19 @@
 spring:
   application:
-    name: inventoryservice
+    name: inventory-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/app_db
+    username: inventory_user
+    password: inventory_pass
+
+  flyway:
+    schemas: inventory
+    default-schema: inventory
+
+  jpa:
+    properties:
+      hibernate:
+
+        default_schema: inventory
+
